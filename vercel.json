@@ -1,0 +1,31 @@
+{
+  "version": 2,
+  "functions": {
+    "api/index.py": {
+<<<<<<< HEAD
+      "maxDuration": 30
+=======
+      "maxDuration": 30,
+      "runtime": "python3.9"
+>>>>>>> 245dae578b65f7ccbcdc89d3b46db79be5d25a09
+    }
+  },
+  "routes": [
+    {
+      "src": "/web_interface/(.*)",
+      "dest": "/web_interface/$1"
+    },
+    {
+      "src": "/api/(.*)",
+      "dest": "/api/index.py"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/api/index.py"
+    }
+  ]
+<<<<<<< HEAD
+}
+=======
+}
+>>>>>>> 245dae578b65f7ccbcdc89d3b46db79be5d25a09

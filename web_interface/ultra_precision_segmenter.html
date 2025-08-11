@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>高精度中文分词系统</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #2c3e50, #3498db);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #2c3e50;
+        }
+        
+        textarea {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e1e8ed;
+            border-radius: 8px;
+            font-size: 16px;
+            font-family: inherit;
+            min-height: 120px;
+            resize: vertical;
+            transition: border-color 0.3s ease;
+        }
+        
+        textarea:focus {
+            border-color: #3498db;
+            outline: none;
+        }
+        
+        .algorithm-selector {
+            margin-bottom: 20px;
+        }
+        
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e8ed;
+            border-radius: 8px;
+            font-size: 16px;
+            background: white;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        button {
+            flex: 1;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .primary-btn {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+        }
+        
+        .primary-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+        }
+        
+        .clear-btn {
+            background: #e74c3c;
+            color: white;
+        }
+        
+        .clear-btn:hover {
+            background: #c0392b;
+        }
+        
+        .result-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 25px;
+            margin-top: 20px;
+            display: none;
+        }
+        
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .result-title {
+            font-size: 1.5rem;
+            color: #2c3e50;
+        }
+        
+        .result-stats {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-item {
+            background: white;
+            padding: 10px 15px;
+            border-radius: 6px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        
+        .stat-value {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #3498db;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        .result-text {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 20px;
+            line-height: 1.8;
+            font-size: 16px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        
+        .word {
+            display: inline-block;
+            margin: 2px;
+            padding: 4px 8px;
+            background: linear-gradient(135deg, #e8f4fd, #d6eaf8);
+            border: 1px solid #3498db;
+            border-radius: 4px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+        
+        .word:hover {
+            background: #3498db;
+            color: white;
+            transform: scale(1.05);
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            color: #666;
+            font-style: italic;
+        }
+        
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 10px 0;
+            display: none;
+        }
+        
+        @media (max-width: 768px) {
+            .button-group {
+                flex-direction: column;
+            }
+            
+            .result-stats {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔥 高精度中文分词系统</h1>
+            <p>基于先进算法的智能中文文本分词处理</p>
+        </div>
+        
+        <div class="content">
+            <div class="form-group">
+                <label for="inputText">请输入需要分词的中文文本：</label>
+                <textarea id="inputText" placeholder="在这里输入您要分词的中文文本...例如：我爱自然语言处理技术"></textarea>
+            </div>
+            
+            <div class="form-group algorithm-selector">
+                <label for="algorithm">选择分词算法：</label>
+                <select id="algorithm">
+                    <option value="advanced">高级领域自适应算法（推荐）</option>
+                </select>
+            </div>
+            
+            <div class="button-group">
+                <button class="primary-btn" onclick="segmentText()">🚀 开始分词</button>
+                <button class="clear-btn" onclick="clearAll()">🧹 清空内容</button>
+            </div>
+            
+            <div class="loading" id="loading">
+                ⏳ 正在处理中，请稍候...
+            </div>
+            
+            <div class="error" id="error"></div>
+            
+            <div class="result-section" id="resultSection">
+                <div class="result-header">
+                    <div class="result-title">📊 分词结果</div>
+                </div>
+                
+                <div class="result-stats" id="stats">
+                    <!-- 统计信息将在这里显示 -->
+                </div>
+                
+                <div class="result-text" id="resultText">
+                    <!-- 分词结果将在这里显示 -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function segmentText() {
+            const text = document.getElementById('inputText').value.trim();
+            const algorithm = document.getElementById('algorithm').value;
+            
+            if (!text) {
+                showError('请输入要分词的文本');
+                return;
+            }
+            
+            showLoading(true);
+            hideError();
+            hideResult();
+            
+            try {
+                const response = await fetch('/api/segment', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        text: text,
+                        algorithm: algorithm
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    displayResult(data);
+                } else {
+                    showError(data.error || '处理失败，请重试');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showError('网络请求失败，请检查服务器状态');
+            } finally {
+                showLoading(false);
+            }
+        }
+        
+        function displayResult(data) {
+            const resultSection = document.getElementById('resultSection');
+            const statsDiv = document.getElementById('stats');
+            const resultText = document.getElementById('resultText');
+            
+            // 显示统计信息
+            const stats = data.data.statistics;
+            statsDiv.innerHTML = `
+                <div class="stat-item">
+                    <div class="stat-value">${stats.total_words}</div>
+                    <div class="stat-label">词汇数量</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">${stats.total_chars}</div>
+                    <div class="stat-label">字符总数</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">${stats.avg_word_length.toFixed(1)}</div>
+                    <div class="stat-label">平均词长</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">${(data.data.processing_time * 1000).toFixed(0)}ms</div>
+                    <div class="stat-label">处理时间</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">${(data.data.confidence * 100).toFixed(1)}%</div>
+                    <div class="stat-label">置信度</div>
+                </div>
+            `;
+            
+            // 显示分词结果
+            resultText.innerHTML = data.data.word_list.map(word => 
+                `<span class="word">${word}</span>`
+            ).join('');
+            
+            resultSection.style.display = 'block';
+        }
+        
+        function clearAll() {
+            document.getElementById('inputText').value = '';
+            hideResult();
+            hideError();
+        }
+        
+        function showLoading(show) {
+            document.getElementById('loading').style.display = show ? 'block' : 'none';
+        }
+        
+        function showError(message) {
+            const errorDiv = document.getElementById('error');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+        }
+        
+        function hideError() {
+            document.getElementById('error').style.display = 'none';
+        }
+        
+        function hideResult() {
+            document.getElementById('resultSection').style.display = 'none';
+        }
+        
+        // 支持回车键提交
+        document.getElementById('inputText').addEventListener('keydown', function(event) {
+            if (event.ctrlKey && event.key === 'Enter') {
+                segmentText();
+            }
+        });
+        
+        // 页面加载完成后的初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('高精度中文分词系统已加载完成');
+        });
+    </script>
+</body>
+</html>
